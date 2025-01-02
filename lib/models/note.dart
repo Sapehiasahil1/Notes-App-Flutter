@@ -8,26 +8,24 @@ class Note {
       {this.id,
       this.title = "Note",
       this.content = "Text",
-      this.noteColor = "Red"
-      });
+      this.noteColor = "Red"});
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> data = Map<String, dynamic>();
-    if(id != null)
-      data['id'] = id;
+    if (id != null) data['id'] = id;
 
     data['title'] = title;
     data['content'] = content;
     data['noteColor'] = noteColor;
     return data;
-}
+  }
 
-@override
+  @override
   String toString() {
     return {
       'id': id,
-      'title':title,
-      'content':content,
+      'title': title,
+      'content': content,
       'noteColor': noteColor,
     }.toString();
   }

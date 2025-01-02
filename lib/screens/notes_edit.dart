@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/models/note.dart';
+import 'package:flutter_notes_app/models/notes_database.dart';
 import 'package:flutter_notes_app/theme/note_colors.dart';
 
 const c1 = 0xFFFDFFFC,
@@ -35,6 +37,44 @@ class _NotesEdit extends State<NotesEdit> {
     });
   }
 
+  void handleBackButton() async {
+    if(noteTitle.length == 0) {
+      Navigator.pop(context);
+      return;
+    } else {
+      String title = noteContent.split('\n')[0];
+      if(title.length > 31) {
+        title = title.substring(0,31);
+      }
+      setState(() {
+        noteTitle = title;
+      });
+    }
+
+    Note noteObj= Note(
+      title: noteTitle,
+      content: noteContent,
+      noteColor: noteColor
+    );
+
+    try {
+      await _insertNote(noteObj);
+    } catch (e) {
+      print("Error inserting row");
+    } finally {
+      Navigator.pop(context);
+      return;
+    }
+  }
+
+  Future<void> _insertNote(Note note) async {
+    NotesDatabase notesDb = NotesDatabase();
+    await notesDb.initDatabase();
+
+    int result = await notesDb.insertNote(note);
+    await notesDb.closeDatabase();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -66,11 +106,11 @@ class _NotesEdit extends State<NotesEdit> {
         title: NoteTitleEntry(_titleTextController),
         actions: [
           IconButton(
-              onPressed: () => handleColor(context),
-              icon: const Icon(
-                Icons.color_lens,
-                color: Color(c1),
-              ),
+            onPressed: () => handleColor(context),
+            icon: const Icon(
+              Icons.color_lens,
+              color: Color(c1),
+            ),
             tooltip: "Color Palette",
           )
         ],
@@ -79,8 +119,77 @@ class _NotesEdit extends State<NotesEdit> {
     );
   }
 
-  void handleColor(BuildContext context) {
+  void handleColor(currContext) {
+    showDialog(
+      context: currContext,
+      builder: (context) =>
+          ColorPalette(
+            parentContext: currContext,
+          ),
+    ).then((colorName) {
+      if (colorName == null) {
+        setState(() {
+          noteColor = colorName;
+        });
+      }
+    });
+  }
+}
 
+class ColorPalette extends StatelessWidget {
+  final parentContext;
+
+  const ColorPalette({@required this.parentContext});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Color(c1),
+      clipBehavior: Clip.hardEdge,
+      insetPadding: EdgeInsets.all(MediaQuery
+          .of(context)
+          .size
+          .width * 0.03),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(2)
+      ),
+      child: Container(
+        padding: EdgeInsets.all(8),
+        child: Wrap(
+          alignment: WrapAlignment.start,
+          spacing: MediaQuery
+              .of(context)
+              .size
+              .width * 0.02,
+          runSpacing: MediaQuery
+              .of(context)
+              .size
+              .width * 0.02,
+          children: NoteColors.entries.map((entry) {
+            return GestureDetector(
+              onTap: () => Navigator.of(context).pop(entry.key),
+              child: Container(
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.12,
+                height: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.12,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(MediaQuery
+                        .of(context)
+                        .size
+                        .width * 0.06),
+                    color: Color(entry.value['b']!)
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
   }
 }
 
@@ -128,7 +237,10 @@ class NoteEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height,
+      height: MediaQuery
+          .of(context)
+          .size
+          .height,
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: TextField(
         controller: _textFieldController,

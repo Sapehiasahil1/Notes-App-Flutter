@@ -41,7 +41,7 @@ class NotesDatabase {
     var result =
         await database.query(tableName, where: 'id = ?', whereArgs: [id]);
 
-    if(result.length >0) {
+    if (result.length > 0) {
       return result.first;
     }
 
@@ -49,10 +49,7 @@ class NotesDatabase {
   }
 
   Future<int> deleteNote(int id) async {
-    return await database.delete(tableName,
-      where: 'id = ?',
-      whereArgs: [id]
-    );
+    return await database.delete(tableName, where: 'id = ?', whereArgs: [id]);
   }
 
   closeDatabase() async {
