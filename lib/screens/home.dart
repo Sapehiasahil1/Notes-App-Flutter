@@ -99,9 +99,11 @@ class _Home extends State<Home> {
             Icons.add,
             color: const Color(c5),
           ),
+          tooltip: "New Notes",
+          backgroundColor: const Color(c4),
           onPressed: () => {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => NotesEdit()))
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => NotesEdit(["new", {}])))
           },
         ),
         body: FutureBuilder(
@@ -204,7 +206,15 @@ class DisplayNotes extends StatelessWidget {
           onTap: () {
             if (selectedNote == false) {
               if (selectedNoteIds.length == 0) {
-                // Go to edit screen to update notes
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NotesEdit(["update", notesData]),
+                  ),
+                ).then((dynamic value) {
+                  callAfterNavigatorPop();
+                });
+                return;
               } else {
                 handleNoteListLongPress(notesData['id']);
               }
@@ -292,5 +302,76 @@ class DisplayNotes extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class BottomActionBar extends StatelessWidget {
+  late final VoidCallback handleDelete;
+  late final VoidCallback handleShare;
+
+  BottomActionBar({required this.handleDelete, required this.handleShare});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+        bottom: 0,
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          child: Material(
+              elevation: 2,
+              color: Color(c7),
+              clipBehavior: Clip.hardEdge,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    InkResponse(
+                      onTap: () => handleDelete(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.delete,
+                            color: Color(c1),
+                            semanticLabel: "Delete",
+                          ),
+                          Text(
+                            "Delete",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Color(c1)),
+                          )
+                        ],
+                      ),
+                    ),
+                    InkResponse(
+                      onTap: () => handleShare(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.share,
+                            color: Color(c1),
+                            semanticLabel: "Share",
+                          ),
+                          Text(
+                            "Share",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Color(c1)),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )),
+        ));
   }
 }
